@@ -7,6 +7,7 @@ import { redirect } from "next/navigation"
 import { signIn } from "@/auth"
 import { AuthError } from "next-auth"
 
+// Define form schema
 const FormSchema = z.object({
   id: z.string(),
   customerId: z.string({invalid_type_error: "Please select a customer"}),
@@ -15,8 +16,10 @@ const FormSchema = z.object({
   date: z.string()
 })
 
+// Define form data type
 const CreateInvoice = FormSchema.omit({ id: true, date: true })
 
+// Define state type
 export type State = {
   errors?: {
     customerId?: string[];
@@ -26,22 +29,29 @@ export type State = {
   message?: string | null;
 };
 
-export async function createInvoice(prevState: StaticRange, formData: FormData) {
+export async function createInvoice(prevState: State, formData: FormData) {
+  // Validate form data against schema
   const validatedFields = CreateInvoice.safeParse({
     customerId: formData.get("customerId"),
     amount: formData.get("amount"),
     status: formData.get("status"),
   })
+
+  // Check if all fields are present
   if (!validatedFields.success) {
+    console.log("Failed to create invoice")
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: "Missing fields. Failed to create invoice."
     }
   }
 
+  // Prepare data for insertion
   const {customerId, amount, status } = validatedFields.data
   const amountInCents = amount * 100
   const date = new Date().toISOString().split("T")[0]
+
+  // Insert data into database
   try {
     await sql`
       INSERT INTO invoices

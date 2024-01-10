@@ -11,12 +11,17 @@ import {
 import { Button } from '@/app/ui/button';
 import { createInvoice } from '@/app/lib/actions';
 import { useFormState } from 'react-dom';
+import { useEffect } from 'react';
 
 export default function Form({ customers }: { customers: CustomerField[] }) {
   const initialState = {
-    message: null, erros: {}
+    message: null, errors: {}
   };
   const [state, dispatch] = useFormState(createInvoice, initialState);
+
+  useEffect(() => {
+    console.log(state);
+  }, [state]);
   return (
     <form action={dispatch}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
@@ -131,6 +136,13 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                   {error}
                 </p>
               ))}
+        </div>
+        <div id="form-error" aria-live="polite" aria-atomic="true">
+            {state.errors && state.message &&
+                <p className="mt-2 text-sm text-red-500">
+                  {state.message}
+            </p>
+              }
         </div>
       </div>
       <div className="mt-6 flex justify-end gap-4">
